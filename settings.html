@@ -1,0 +1,1612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings | Reminder App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #2fc6f6;
+            --primary-dark-blue: #1b9cd9;
+            --secondary-gray: #f5f7f8;
+            --dark-gray: #535c69;
+            --light-gray: #eef2f4;
+            --border-color: #d5dce1;
+            --text-dark: #333333;
+            --text-light: #828b95;
+            --success-color: #9dcf00;
+            --warning-color: #ffa900;
+            --danger-color: #ff5752;
+            --shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            color: var(--text-dark);
+            line-height: 1.5;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles (Same as main app) */
+        .sidebar {
+            width: 240px;
+            background-color: white;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition);
+            box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .sidebar.collapsed {
+            width: 60px;
+        }
+
+        .logo-section {
+            padding: 20px 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo {
+            width: 32px;
+            height: 32px;
+            background-color: var(--primary-blue);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .logo-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-dark);
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .sidebar.collapsed .logo-text {
+            display: none;
+        }
+
+        .nav-section {
+            padding: 16px 0;
+            flex-grow: 1;
+        }
+
+        .nav-section h3 {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-light);
+            padding: 0 16px 8px;
+            font-weight: 600;
+        }
+
+        .sidebar.collapsed .nav-section h3 {
+            display: none;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: var(--text-dark);
+            text-decoration: none;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .nav-item:hover {
+            background-color: var(--light-gray);
+        }
+
+        .nav-item.active {
+            background-color: rgba(47, 198, 246, 0.1);
+            color: var(--primary-blue);
+            font-weight: 500;
+        }
+
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background-color: var(--primary-blue);
+        }
+
+        .nav-icon {
+            width: 20px;
+            text-align: center;
+            color: var(--text-light);
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .nav-item.active .nav-icon {
+            color: var(--primary-blue);
+        }
+
+        .nav-text {
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .sidebar.collapsed .nav-text {
+            display: none;
+        }
+
+        .counter {
+            background-color: var(--danger-color);
+            color: white;
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: auto;
+            font-weight: 600;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            border-top: 1px solid var(--border-color);
+            padding: 16px;
+        }
+
+        .toggle-sidebar {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            padding: 8px;
+            border-radius: 4px;
+            transition: var(--transition);
+        }
+
+        .toggle-sidebar:hover {
+            background-color: var(--light-gray);
+        }
+
+        .sidebar.collapsed .toggle-sidebar span {
+            display: none;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            background-color: white;
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .header-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .header-date {
+            color: var(--text-light);
+            font-size: 14px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-button {
+            background-color: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-button:hover {
+            background-color: var(--primary-dark-blue);
+        }
+
+        .header-button.outline {
+            background-color: transparent;
+            color: var(--primary-blue);
+            border: 1px solid var(--primary-blue);
+        }
+
+        .header-button.outline:hover {
+            background-color: rgba(47, 198, 246, 0.1);
+        }
+
+        /* Content Area */
+        .content-area {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            background-color: var(--secondary-gray);
+        }
+
+        /* Settings Page Specific Styles */
+        .settings-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .settings-header {
+            margin-bottom: 24px;
+        }
+
+        .settings-title {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+        }
+
+        .settings-subtitle {
+            color: var(--text-light);
+            font-size: 15px;
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .settings-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .card-icon {
+            width: 36px;
+            height: 36px;
+            background-color: rgba(47, 198, 246, 0.1);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-blue);
+            font-size: 18px;
+        }
+
+        .card-content {
+            padding: 20px;
+        }
+
+        .setting-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+
+        .setting-info {
+            flex: 1;
+        }
+
+        .setting-title {
+            font-weight: 500;
+            margin-bottom: 4px;
+            font-size: 15px;
+        }
+
+        .setting-description {
+            color: var(--text-light);
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 52px;
+            height: 26px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--border-color);
+            transition: var(--transition);
+            border-radius: 34px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: var(--transition);
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: var(--primary-blue);
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+
+        /* Color Theme Options */
+        .color-options {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .color-option {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: var(--transition);
+        }
+
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+
+        .color-option.active {
+            border-color: var(--text-dark);
+            transform: scale(1.1);
+        }
+
+        /* Select Dropdown */
+        .select-wrapper {
+            position: relative;
+            min-width: 160px;
+        }
+
+        .select-wrapper select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: white;
+            font-size: 14px;
+            color: var(--text-dark);
+            appearance: none;
+            cursor: pointer;
+        }
+
+        .select-wrapper::after {
+            content: '\f078';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: var(--text-light);
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark-blue);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--primary-blue);
+            border: 1px solid var(--primary-blue);
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(47, 198, 246, 0.1);
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #ff3b36;
+        }
+
+        /* Data Management */
+        .data-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+
+        /* Privacy Policy Section */
+        .privacy-policy {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-top: 32px;
+        }
+
+        .privacy-content {
+            padding: 32px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .privacy-content h2 {
+            font-size: 24px;
+            margin-bottom: 16px;
+            color: var(--text-dark);
+        }
+
+        .privacy-content h3 {
+            font-size: 18px;
+            margin-top: 24px;
+            margin-bottom: 12px;
+            color: var(--text-dark);
+        }
+
+        .privacy-content p {
+            margin-bottom: 16px;
+            line-height: 1.6;
+            color: var(--dark-gray);
+        }
+
+        .privacy-content ul {
+            margin-bottom: 16px;
+            padding-left: 20px;
+        }
+
+        .privacy-content li {
+            margin-bottom: 8px;
+            color: var(--dark-gray);
+            line-height: 1.6;
+        }
+
+        .last-updated {
+            color: var(--text-light);
+            font-style: italic;
+            margin-top: 24px;
+            font-size: 14px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 500px;
+            overflow: hidden;
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: var(--text-light);
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-footer {
+            padding: 20px 24px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: white;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 1000;
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification-icon {
+            width: 20px;
+            height: 20px;
+            background-color: var(--primary-blue);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-title {
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .notification-message {
+            color: var(--text-light);
+            font-size: 14px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 60px;
+            }
+            
+            .sidebar:not(.collapsed) {
+                position: fixed;
+                z-index: 1000;
+                height: 100%;
+                box-shadow: 4px 0 8px rgba(0, 0, 0, 0.1);
+            }
+            
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                padding: 0 16px;
+            }
+            
+            .content-area {
+                padding: 16px;
+            }
+            
+            .privacy-content {
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .data-actions {
+                flex-direction: column;
+            }
+            
+            .data-actions .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="logo-section">
+                <div class="logo">R</div>
+                <div class="logo-text">Reminder</div>
+            </div>
+            
+            <div class="nav-section">
+                <h3>Navigation</h3>
+                <a href="index.html" class="nav-item">
+                    <div class="nav-icon"><i class="fas fa-home"></i></div>
+                    <div class="nav-text">Dashboard</div>
+                </a>
+                <a href="index.html#today" class="nav-item">
+                    <div class="nav-icon"><i class="fas fa-calendar-day"></i></div>
+                    <div class="nav-text">Today</div>
+                </a>
+                <a href="index.html#upcoming" class="nav-item">
+                    <div class="nav-icon"><i class="fas fa-calendar-week"></i></div>
+                    <div class="nav-text">Upcoming</div>
+                </a>
+                
+                <h3>Settings</h3>
+                <div class="nav-item active">
+                    <div class="nav-icon"><i class="fas fa-cog"></i></div>
+                    <div class="nav-text">General Settings</div>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon"><i class="fas fa-bell"></i></div>
+                    <div class="nav-text">Notifications</div>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon"><i class="fas fa-palette"></i></div>
+                    <div class="nav-text">Appearance</div>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon"><i class="fas fa-database"></i></div>
+                    <div class="nav-text">Data & Storage</div>
+                </div>
+            </div>
+            
+            <div class="sidebar-footer">
+                <button class="toggle-sidebar" id="toggle-sidebar">
+                    <i class="fas fa-chevron-left"></i>
+                    <span>Collapse</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <div class="header-left">
+                    <h1 class="header-title">Settings</h1>
+                    <div class="header-date" id="current-date">Thursday, January 16, 2025</div>
+                </div>
+                <div class="header-right">
+                    <button class="header-button outline" id="back-to-app">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Back to App</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Content Area -->
+            <div class="content-area">
+                <div class="settings-container">
+                    <!-- Settings Header -->
+                    <div class="settings-header">
+                        <h1 class="settings-title">Settings & Preferences</h1>
+                        <p class="settings-subtitle">Customize your Reminder app experience</p>
+                    </div>
+                    
+                    <!-- Settings Grid -->
+                    <div class="settings-grid">
+                        <!-- General Settings Card -->
+                        <div class="settings-card">
+                            <div class="card-header">
+                                <h3>General Settings</h3>
+                                <div class="card-icon">
+                                    <i class="fas fa-cog"></i>
+                                </div>
+                            </div>
+                            <div class="card-content">
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <div class="setting-title">Default Reminder Time</div>
+                                        <div class="setting-description">Set default time for new reminders</div>
+                                    </div>
+                                    <div class="select-wrapper">
+                                        <select id="default-time">
+                                            <option value="09:00">9:00 AM</option>
+                                            <option value="10:00" selected>10:00 AM</option>
+                                            <option value="11:00">11:00 AM</option>
+                                            <option value="12:00">12:00 PM</option>
+                                            <option value="13:00">1:00 PM</option>
+                                            <option value="14:00">2:00 PM</option>
+                                            <option value="15:00">3:00 PM</option>
+                                            <option value="16:00">4:00 PM</option>
+                                            <option value="17:00">5:00 PM</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <div class="setting-title">Default Category</div>
+                                        <div class="setting-description">Set default category for new reminders</div>
+                                    </div>
+                                    <div class="select-wrapper">
+                                        <select id="default-category">
+                                            <option value="general" selected>General</option>
+                                            <option value="work">Work</option>
+                                            <option value="personal">Personal</option>
+                                            <option value="urgent">Urgent</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <div class="setting-title">Week Start Day</div>
+                                        <div class="setting-description">Choose which day starts the week</div>
+                                    </div>
+                                    <div class="select-wrapper">
+                                        <select id="week-start-day">
+                                            <option value="monday" selected>Monday</option>
+                                            <option value="sunday">Sunday</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <div class="setting-title">Time Format</div>
+                                        <div class="setting-description">Choose 12-hour or 24-hour format</div>
+                                    </div>
+                                    <div class="select-wrapper">
+                                        <select id="time-format">
+                                            <option value="12" selected>12-hour (AM/PM)</option>
+                                            <option value="24">24-hour</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Notifications Card -->
+                        <div class="settings-card">
+                            <div class="card-header">
+                                <h3>Notifications</h3>
+                                <div class="card-icon">
+                                    <i class="fas fa-bell"></i>
+                                </div>
+                            </div>
+                            <div class="card-content">
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <div class="setting-title">Enable Notifications</div>
+                                        <div class="setting-description">Receive reminders as browser notifications</div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="notifications-enabled" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <div class="setting-title">Notification Sound</div>
+                                        <div class="setting-description">Play sound with notifications</div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="notification-sound" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <div class="setting-title">Reminder Beforehand</div>
+                                        <div class="setting-description">Get notified before the reminder time</div>
+                                    </div>
+                                    <div class="select-wrapper">
+                                        <select id="reminder-beforehand">
+                                            <option value="0">At the time</option>
+                                            <option value="5" selected>5 minutes before</option>
+                                            <option value="15">15 minutes before</option>
+                                            <option value="30">30 minutes before</option>
+                                            <option value="60">1 hour before</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <div class="setting-title">Daily Summary</div>
+                                        <div class="setting-description">Receive a daily summary of reminders</div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="daily-summary" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Appearance Card -->
+                        <div class="settings-card">
+                            <div class="card-header">
+                                <h3>Appearance</h3>
+                                <div class="card-icon">
+                                    <i class="fas fa-palette"></i>
+                                </div>
+                            </div>
+                            <div class="card-content">
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <div class="setting-title">Theme</div>
+                                        <div class="setting-description">Choose light or dark mode</div>
+                                    </div>
+                                    <div class="select-wrapper">
+                                        <select id="theme">
+                                            <option value="light" selected>Light</option>
+                                            <option value="dark">Dark</option>
+                                            <option value="auto">Auto (System)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <div class="setting-title">Accent Color</div>
+                                        <div class="setting-description">Choose your preferred accent color</div>
+                                    </div>
+                                    <div class="color-options">
+                                        <div class="color-option active" style="background-color: #2fc6f6;" data-color="#2fc6f6"></div>
+                                        <div class="color-option" style="background-color: #9dcf00;" data-color="#9dcf00"></div>
+                                        <div class="color-option" style="background-color: #ffa900;" data-color="#ffa900"></div>
+                                        <div class="color-option" style="background-color: #ff5752;" data-color="#ff5752"></div>
+                                        <div class="color-option" style="background-color: #8a2be2;" data-color="#8a2be2"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <div class="setting-title">Compact Mode</div>
+                                        <div class="setting-description">Show more items in less space</div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="compact-mode">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <div class="setting-title">Show Completed</div>
+                                        <div class="setting-description">Show completed reminders in lists</div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="show-completed" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Data & Storage Card -->
+                        <div class="settings-card">
+                            <div class="card-header">
+                                <h3>Data & Storage</h3>
+                                <div class="card-icon">
+                                    <i class="fas fa-database"></i>
+                                </div>
+                            </div>
+                            <div class="card-content">
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <div class="setting-title">Auto-sync</div>
+                                        <div class="setting-description">Automatically sync data across devices</div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="auto-sync" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <div class="setting-title">Backup Reminders</div>
+                                        <div class="setting-description">Automatically backup reminders weekly</div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="auto-backup" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <div class="setting-title">Storage Used</div>
+                                        <div class="setting-description">Approximate local storage usage</div>
+                                    </div>
+                                    <div class="storage-info">
+                                        <span id="storage-used">12.5 KB</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="data-actions">
+                                    <button class="btn btn-secondary" id="export-data">
+                                        <i class="fas fa-download"></i> Export Data
+                                    </button>
+                                    <button class="btn btn-secondary" id="import-data">
+                                        <i class="fas fa-upload"></i> Import Data
+                                    </button>
+                                    <button class="btn btn-danger" id="clear-data">
+                                        <i class="fas fa-trash"></i> Clear All Data
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Privacy Policy Section -->
+                    <div class="privacy-policy">
+                        <div class="card-header">
+                            <h3>Privacy Policy</h3>
+                            <div class="card-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                        </div>
+                        <div class="privacy-content">
+                            <h2>Reminder App Privacy Policy</h2>
+                            
+                            <p><strong>Last Updated: January 16, 2025</strong></p>
+                            
+                            <p>This Privacy Policy describes how your personal information is collected, used, and shared when you use the Reminder app.</p>
+                            
+                            <h3>Information We Collect</h3>
+                            <p>We collect the following types of information:</p>
+                            <ul>
+                                <li><strong>Reminder Data:</strong> The reminders you create including titles, descriptions, dates, categories, and repeat settings.</li>
+                                <li><strong>App Preferences:</strong> Your settings and preferences within the app.</li>
+                                <li><strong>Usage Data:</strong> Information about how you interact with the app (features used, time spent).</li>
+                                <li><strong>Device Information:</strong> Basic device information for app functionality.</li>
+                            </ul>
+                            
+                            <h3>How We Use Your Information</h3>
+                            <p>We use the information we collect to:</p>
+                            <ul>
+                                <li>Provide and maintain the Reminder app functionality</li>
+                                <li>Send you notifications for your reminders</li>
+                                <li>Personalize your app experience based on your preferences</li>
+                                <li>Improve and optimize the app's performance</li>
+                                <li>Ensure the security and integrity of the app</li>
+                            </ul>
+                            
+                            <h3>Data Storage</h3>
+                            <p>Your reminder data is stored locally on your device using browser storage. We do not store your reminder data on external servers unless you explicitly use cloud sync features.</p>
+                            
+                            <h3>Data Sharing</h3>
+                            <p>We do not sell, trade, or rent your personal information to third parties. Your data remains on your device unless:</p>
+                            <ul>
+                                <li>You explicitly choose to export or share your data</li>
+                                <li>You enable cloud synchronization features</li>
+                                <li>Required by law or legal process</li>
+                            </ul>
+                            
+                            <h3>Security</h3>
+                            <p>We take reasonable measures to protect your information from unauthorized access or disclosure. However, no method of electronic storage is 100% secure.</p>
+                            
+                            <h3>Your Rights</h3>
+                            <p>You have the right to:</p>
+                            <ul>
+                                <li>Access the personal information we hold about you</li>
+                                <li>Request correction of inaccurate information</li>
+                                <li>Delete your data through the app's settings</li>
+                                <li>Export your data at any time</li>
+                                <li>Opt-out of notifications</li>
+                            </ul>
+                            
+                            <h3>Changes to This Policy</h3>
+                            <p>We may update this privacy policy from time to time. We will notify you of any changes by posting the new policy on this page and updating the "Last Updated" date.</p>
+                            
+                            <h3>Contact Us</h3>
+                            <p>If you have questions about this Privacy Policy, please contact us at: <strong>privacy@reminderapp.example.com</strong></p>
+                            
+                            <p class="last-updated">Last updated: January 16, 2025</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Confirmation Modal -->
+    <div class="modal" id="confirmation-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Confirm Action</h3>
+                <button class="close-modal" id="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="modal-message">Are you sure you want to perform this action?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="modal-cancel">Cancel</button>
+                <button class="btn btn-primary" id="modal-confirm">Confirm</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <div class="notification-icon"><i class="fas fa-check"></i></div>
+        <div class="notification-content">
+            <div class="notification-title">Success</div>
+            <div class="notification-message">Settings saved successfully</div>
+        </div>
+    </div>
+
+    <!-- Hidden file input for import -->
+    <input type="file" id="import-file-input" accept=".json" style="display: none;">
+
+    <script>
+        // Application state
+        const state = {
+            settings: JSON.parse(localStorage.getItem('reminder-settings')) || {
+                defaultTime: '10:00',
+                defaultCategory: 'general',
+                weekStartDay: 'monday',
+                timeFormat: '12',
+                notificationsEnabled: true,
+                notificationSound: true,
+                reminderBeforehand: '5',
+                dailySummary: true,
+                theme: 'light',
+                accentColor: '#2fc6f6',
+                compactMode: false,
+                showCompleted: true,
+                autoSync: true,
+                autoBackup: true
+            },
+            modalAction: null,
+            modalData: null
+        };
+
+        // DOM Elements
+        const sidebar = document.getElementById('sidebar');
+        const toggleSidebar = document.getElementById('toggle-sidebar');
+        const backToAppBtn = document.getElementById('back-to-app');
+        const currentDate = document.getElementById('current-date');
+        const notification = document.getElementById('notification');
+        const confirmationModal = document.getElementById('confirmation-modal');
+        const closeModal = document.getElementById('close-modal');
+        const modalCancel = document.getElementById('modal-cancel');
+        const modalConfirm = document.getElementById('modal-confirm');
+        const modalMessage = document.getElementById('modal-message');
+        const modalTitle = document.getElementById('modal-title');
+        
+        // Settings elements
+        const defaultTime = document.getElementById('default-time');
+        const defaultCategory = document.getElementById('default-category');
+        const weekStartDay = document.getElementById('week-start-day');
+        const timeFormat = document.getElementById('time-format');
+        const notificationsEnabled = document.getElementById('notifications-enabled');
+        const notificationSound = document.getElementById('notification-sound');
+        const reminderBeforehand = document.getElementById('reminder-beforehand');
+        const dailySummary = document.getElementById('daily-summary');
+        const theme = document.getElementById('theme');
+        const colorOptions = document.querySelectorAll('.color-option');
+        const compactMode = document.getElementById('compact-mode');
+        const showCompleted = document.getElementById('show-completed');
+        const autoSync = document.getElementById('auto-sync');
+        const autoBackup = document.getElementById('auto-backup');
+        const storageUsed = document.getElementById('storage-used');
+        const exportDataBtn = document.getElementById('export-data');
+        const importDataBtn = document.getElementById('import-data');
+        const importFileInput = document.getElementById('import-file-input');
+        const clearDataBtn = document.getElementById('clear-data');
+
+        // Initialize the settings page
+        function initSettingsPage() {
+            // Set current date
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            currentDate.textContent = now.toLocaleDateString('en-US', options);
+            
+            // Load settings from state
+            loadSettings();
+            
+            // Calculate and display storage usage
+            updateStorageUsage();
+            
+            // Setup event listeners
+            setupEventListeners();
+        }
+
+        // Load settings into form
+        function loadSettings() {
+            defaultTime.value = state.settings.defaultTime;
+            defaultCategory.value = state.settings.defaultCategory;
+            weekStartDay.value = state.settings.weekStartDay;
+            timeFormat.value = state.settings.timeFormat;
+            notificationsEnabled.checked = state.settings.notificationsEnabled;
+            notificationSound.checked = state.settings.notificationSound;
+            reminderBeforehand.value = state.settings.reminderBeforehand;
+            dailySummary.checked = state.settings.dailySummary;
+            theme.value = state.settings.theme;
+            compactMode.checked = state.settings.compactMode;
+            showCompleted.checked = state.settings.showCompleted;
+            autoSync.checked = state.settings.autoSync;
+            autoBackup.checked = state.settings.autoBackup;
+            
+            // Set active color option
+            colorOptions.forEach(option => {
+                option.classList.remove('active');
+                if (option.getAttribute('data-color') === state.settings.accentColor) {
+                    option.classList.add('active');
+                }
+            });
+            
+            // Apply accent color to UI
+            applyAccentColor();
+        }
+
+        // Save settings
+        function saveSettings() {
+            state.settings.defaultTime = defaultTime.value;
+            state.settings.defaultCategory = defaultCategory.value;
+            state.settings.weekStartDay = weekStartDay.value;
+            state.settings.timeFormat = timeFormat.value;
+            state.settings.notificationsEnabled = notificationsEnabled.checked;
+            state.settings.notificationSound = notificationSound.checked;
+            state.settings.reminderBeforehand = reminderBeforehand.value;
+            state.settings.dailySummary = dailySummary.checked;
+            state.settings.theme = theme.value;
+            state.settings.compactMode = compactMode.checked;
+            state.settings.showCompleted = showCompleted.checked;
+            state.settings.autoSync = autoSync.checked;
+            state.settings.autoBackup = autoBackup.checked;
+            
+            localStorage.setItem('reminder-settings', JSON.stringify(state.settings));
+            
+            // Apply theme if changed
+            applyTheme();
+            
+            // Apply accent color
+            applyAccentColor();
+            
+            // Show notification
+            showNotification('Settings saved successfully');
+        }
+
+        // Apply accent color to UI
+        function applyAccentColor() {
+            document.documentElement.style.setProperty('--primary-blue', state.settings.accentColor);
+            
+            // Calculate darker shade for hover
+            const hex = state.settings.accentColor.replace('#', '');
+            const r = parseInt(hex.substring(0, 2), 16);
+            const g = parseInt(hex.substring(2, 4), 16);
+            const b = parseInt(hex.substring(4, 6), 16);
+            
+            // Darken by 10%
+            const darkR = Math.max(0, r - 25);
+            const darkG = Math.max(0, g - 25);
+            const darkB = Math.max(0, b - 25);
+            
+            const darkHex = `#${darkR.toString(16).padStart(2, '0')}${darkG.toString(16).padStart(2, '0')}${darkB.toString(16).padStart(2, '0')}`;
+            document.documentElement.style.setProperty('--primary-dark-blue', darkHex);
+        }
+
+        // Apply theme
+        function applyTheme() {
+            const themeValue = state.settings.theme;
+            
+            if (themeValue === 'dark') {
+                document.documentElement.style.setProperty('--secondary-gray', '#1a1a1a');
+                document.documentElement.style.setProperty('--light-gray', '#2d2d2d');
+                document.documentElement.style.setProperty('--border-color', '#404040');
+                document.documentElement.style.setProperty('--text-dark', '#f0f0f0');
+                document.documentElement.style.setProperty('--text-light', '#a0a0a0');
+                document.body.style.backgroundColor = '#121212';
+            } else if (themeValue === 'auto') {
+                // Auto theme based on system preference
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.documentElement.style.setProperty('--secondary-gray', '#1a1a1a');
+                    document.documentElement.style.setProperty('--light-gray', '#2d2d2d');
+                    document.documentElement.style.setProperty('--border-color', '#404040');
+                    document.documentElement.style.setProperty('--text-dark', '#f0f0f0');
+                    document.documentElement.style.setProperty('--text-light', '#a0a0a0');
+                    document.body.style.backgroundColor = '#121212';
+                } else {
+                    resetThemeToLight();
+                }
+            } else {
+                resetThemeToLight();
+            }
+        }
+
+        // Reset theme to light
+        function resetThemeToLight() {
+            document.documentElement.style.setProperty('--secondary-gray', '#f5f7f8');
+            document.documentElement.style.setProperty('--light-gray', '#eef2f4');
+            document.documentElement.style.setProperty('--border-color', '#d5dce1');
+            document.documentElement.style.setProperty('--text-dark', '#333333');
+            document.documentElement.style.setProperty('--text-light', '#828b95');
+            document.body.style.backgroundColor = '#f0f2f5';
+        }
+
+        // Update storage usage display
+        function updateStorageUsage() {
+            try {
+                // Calculate reminders storage
+                const reminders = JSON.parse(localStorage.getItem('reminders') || '[]');
+                const remindersSize = JSON.stringify(reminders).length;
+                
+                // Calculate settings storage
+                const settingsSize = JSON.stringify(state.settings).length;
+                
+                // Total size in KB
+                const totalSizeKB = ((remindersSize + settingsSize) / 1024).toFixed(2);
+                
+                storageUsed.textContent = `${totalSizeKB} KB`;
+            } catch (error) {
+                storageUsed.textContent = 'Unknown';
+            }
+        }
+
+        // Export data
+        function exportData() {
+            const reminders = JSON.parse(localStorage.getItem('reminders') || '[]');
+            const settings = state.settings;
+            
+            const exportData = {
+                reminders: reminders,
+                settings: settings,
+                exportDate: new Date().toISOString(),
+                appVersion: '1.0.0'
+            };
+            
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = `reminder-app-backup-${new Date().toISOString().split('T')[0]}.json`;
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+            
+            showNotification('Data exported successfully');
+        }
+
+        // Import data
+        function importData() {
+            importFileInput.click();
+        }
+
+        // Handle file import
+        function handleFileImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    
+                    // Validate imported data structure
+                    if (!importedData.reminders || !Array.isArray(importedData.reminders)) {
+                        throw new Error('Invalid data format');
+                    }
+                    
+                    // Show confirmation modal
+                    showConfirmationModal(
+                        'Import Data',
+                        `This will import ${importedData.reminders.length} reminders and overwrite your current settings. Are you sure?`,
+                        'import',
+                        importedData
+                    );
+                } catch (error) {
+                    showNotification('Failed to import data: Invalid file format', 'error');
+                }
+            };
+            
+            reader.readAsText(file);
+            
+            // Reset file input
+            event.target.value = '';
+        }
+
+        // Execute import
+        function executeImport(importedData) {
+            try {
+                // Save reminders
+                localStorage.setItem('reminders', JSON.stringify(importedData.reminders));
+                
+                // Update settings if provided
+                if (importedData.settings) {
+                    localStorage.setItem('reminder-settings', JSON.stringify(importedData.settings));
+                    state.settings = importedData.settings;
+                    loadSettings();
+                }
+                
+                updateStorageUsage();
+                showNotification(`Successfully imported ${importedData.reminders.length} reminders`);
+            } catch (error) {
+                showNotification('Failed to import data', 'error');
+            }
+        }
+
+        // Clear all data
+        function clearAllData() {
+            showConfirmationModal(
+                'Clear All Data',
+                'This will permanently delete all your reminders and reset settings to default. This action cannot be undone.',
+                'clear'
+            );
+        }
+
+        // Execute data clearing
+        function executeClearData() {
+            try {
+                // Clear reminders
+                localStorage.removeItem('reminders');
+                
+                // Reset settings to default
+                const defaultSettings = {
+                    defaultTime: '10:00',
+                    defaultCategory: 'general',
+                    weekStartDay: 'monday',
+                    timeFormat: '12',
+                    notificationsEnabled: true,
+                    notificationSound: true,
+                    reminderBeforehand: '5',
+                    dailySummary: true,
+                    theme: 'light',
+                    accentColor: '#2fc6f6',
+                    compactMode: false,
+                    showCompleted: true,
+                    autoSync: true,
+                    autoBackup: true
+                };
+                
+                localStorage.setItem('reminder-settings', JSON.stringify(defaultSettings));
+                state.settings = defaultSettings;
+                
+                loadSettings();
+                updateStorageUsage();
+                showNotification('All data cleared successfully');
+            } catch (error) {
+                showNotification('Failed to clear data', 'error');
+            }
+        }
+
+        // Show confirmation modal
+        function showConfirmationModal(title, message, action, data = null) {
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            state.modalAction = action;
+            state.modalData = data;
+            confirmationModal.classList.add('show');
+        }
+
+        // Close confirmation modal
+        function closeConfirmationModal() {
+            confirmationModal.classList.remove('show');
+            state.modalAction = null;
+            state.modalData = null;
+        }
+
+        // Show notification
+        function showNotification(message, type = 'success') {
+            const notificationTitle = notification.querySelector('.notification-title');
+            const notificationMessage = notification.querySelector('.notification-message');
+            const notificationIcon = notification.querySelector('.notification-icon');
+            
+            notificationTitle.textContent = type === 'success' ? 'Success' : type === 'error' ? 'Error' : 'Info';
+            notificationMessage.textContent = message;
+            
+            if (type === 'success') {
+                notificationIcon.innerHTML = '<i class="fas fa-check"></i>';
+                notificationIcon.style.backgroundColor = 'var(--success-color)';
+            } else if (type === 'error') {
+                notificationIcon.innerHTML = '<i class="fas fa-exclamation"></i>';
+                notificationIcon.style.backgroundColor = 'var(--danger-color)';
+            } else {
+                notificationIcon.innerHTML = '<i class="fas fa-info-circle"></i>';
+                notificationIcon.style.backgroundColor = 'var(--primary-blue)';
+            }
+            
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Toggle sidebar
+            toggleSidebar.addEventListener('click', () => {
+                sidebar.classList.toggle('collapsed');
+                const icon = toggleSidebar.querySelector('i');
+                const text = toggleSidebar.querySelector('span');
+                
+                if (sidebar.classList.contains('collapsed')) {
+                    icon.className = 'fas fa-chevron-right';
+                    text.textContent = 'Expand';
+                } else {
+                    icon.className = 'fas fa-chevron-left';
+                    text.textContent = 'Collapse';
+                }
+            });
+
+            // Back to app button
+            backToAppBtn.addEventListener('click', () => {
+                window.location.href = 'index.html';
+            });
+
+            // Save settings on change
+            const saveableElements = [
+                defaultTime, defaultCategory, weekStartDay, timeFormat,
+                notificationsEnabled, notificationSound, reminderBeforehand,
+                dailySummary, theme, compactMode, showCompleted, autoSync, autoBackup
+            ];
+            
+            saveableElements.forEach(element => {
+                if (element.type === 'checkbox') {
+                    element.addEventListener('change', saveSettings);
+                } else {
+                    element.addEventListener('change', saveSettings);
+                }
+            });
+
+            // Color options
+            colorOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    colorOptions.forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+                    state.settings.accentColor = this.getAttribute('data-color');
+                    saveSettings();
+                });
+            });
+
+            // Data management buttons
+            exportDataBtn.addEventListener('click', exportData);
+            importDataBtn.addEventListener('click', importData);
+            importFileInput.addEventListener('change', handleFileImport);
+            clearDataBtn.addEventListener('click', clearAllData);
+
+            // Modal
+            closeModal.addEventListener('click', closeConfirmationModal);
+            modalCancel.addEventListener('click', closeConfirmationModal);
+            modalConfirm.addEventListener('click', () => {
+                if (state.modalAction === 'import') {
+                    executeImport(state.modalData);
+                } else if (state.modalAction === 'clear') {
+                    executeClearData();
+                }
+                closeConfirmationModal();
+            });
+
+            // Auto-save for inputs that don't have change events
+            document.querySelectorAll('input[type="text"], input[type="number"], textarea').forEach(input => {
+                input.addEventListener('blur', saveSettings);
+            });
+
+            // Listen for system theme changes if auto theme is selected
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+                if (state.settings.theme === 'auto') {
+                    applyTheme();
+                }
+            });
+        }
+
+        // Initialize the settings page when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initSettingsPage);
+    </script>
+</body>
+</html>

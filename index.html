@@ -1,0 +1,2881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reminder | Professional Task Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #2fc6f6;
+            --primary-dark-blue: #1b9cd9;
+            --secondary-gray: #f5f7f8;
+            --dark-gray: #535c69;
+            --light-gray: #eef2f4;
+            --border-color: #d5dce1;
+            --text-dark: #333333;
+            --text-light: #828b95;
+            --success-color: #9dcf00;
+            --warning-color: #ffa900;
+            --danger-color: #ff5752;
+            --shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            color: var(--text-dark);
+            line-height: 1.5;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar Styles (Bitrix24 inspired) */
+        .sidebar {
+            width: 240px;
+            background-color: white;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition);
+            box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .sidebar.collapsed {
+            width: 60px;
+        }
+
+        .logo-section {
+            padding: 20px 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo {
+            width: 32px;
+            height: 32px;
+            background-color: var(--primary-blue);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .logo-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-dark);
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .sidebar.collapsed .logo-text {
+            display: none;
+        }
+
+        .nav-section {
+            padding: 16px 0;
+            flex-grow: 1;
+        }
+
+        .nav-section h3 {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-light);
+            padding: 0 16px 8px;
+            font-weight: 600;
+        }
+
+        .sidebar.collapsed .nav-section h3 {
+            display: none;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: var(--text-dark);
+            text-decoration: none;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .nav-item:hover {
+            background-color: var(--light-gray);
+        }
+
+        .nav-item.active {
+            background-color: rgba(47, 198, 246, 0.1);
+            color: var(--primary-blue);
+            font-weight: 500;
+        }
+
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background-color: var(--primary-blue);
+        }
+
+        .nav-icon {
+            width: 20px;
+            text-align: center;
+            color: var(--text-light);
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .nav-item.active .nav-icon {
+            color: var(--primary-blue);
+        }
+
+        .nav-text {
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .sidebar.collapsed .nav-text {
+            display: none;
+        }
+
+        .counter {
+            background-color: var(--danger-color);
+            color: white;
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: auto;
+            font-weight: 600;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            border-top: 1px solid var(--border-color);
+            padding: 16px;
+        }
+
+        .toggle-sidebar {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            padding: 8px;
+            border-radius: 4px;
+            transition: var(--transition);
+        }
+
+        .toggle-sidebar:hover {
+            background-color: var(--light-gray);
+        }
+
+        .sidebar.collapsed .toggle-sidebar span {
+            display: none;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            background-color: white;
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .header-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .header-date {
+            color: var(--text-light);
+            font-size: 14px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-button {
+            background-color: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-button:hover {
+            background-color: var(--primary-dark-blue);
+        }
+
+        .header-button.outline {
+            background-color: transparent;
+            color: var(--primary-blue);
+            border: 1px solid var(--primary-blue);
+        }
+
+        .header-button.outline:hover {
+            background-color: rgba(47, 198, 246, 0.1);
+        }
+
+        /* Content Area - Scrollable */
+        .content-area {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto; /* Make content area scrollable */
+            background-color: var(--secondary-gray);
+        }
+
+        /* Stats */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr); /* 5 columns for all stats */
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .stat-value.total {
+            color: var(--primary-blue);
+        }
+
+        .stat-value.pending {
+            color: var(--warning-color);
+        }
+
+        .stat-value.completed {
+            color: var(--success-color);
+        }
+
+        .stat-value.urgent {
+            color: var(--danger-color);
+        }
+
+        .stat-value.work {
+            color: #9b59b6;
+        }
+
+        .stat-value.personal {
+            color: #3498db;
+        }
+
+        .stat-label {
+            color: var(--text-light);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Calendar View */
+        .calendar-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .calendar-header {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            background-color: var(--light-gray);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .calendar-day-header {
+            text-align: center;
+            padding: 12px;
+            font-weight: 600;
+            color: var(--text-light);
+            font-size: 13px;
+            text-transform: uppercase;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            grid-auto-rows: 1fr;
+        }
+
+        .calendar-day {
+            border: 1px solid var(--border-color);
+            min-height: 120px;
+            padding: 8px;
+            transition: var(--transition);
+            position: relative;
+            cursor: pointer;
+        }
+
+        .calendar-day:hover {
+            background-color: rgba(47, 198, 246, 0.1);
+            cursor: pointer;
+        }
+
+        .calendar-day.other-month {
+            background-color: #fafafa;
+            color: #a0a0a0;
+        }
+
+        .calendar-day.today {
+            background-color: rgba(47, 198, 246, 0.1);
+            border-color: var(--primary-blue);
+        }
+
+        .day-number {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--text-dark);
+        }
+
+        .today .day-number {
+            color: var(--primary-blue);
+        }
+
+        .reminder-badge {
+            background-color: var(--primary-blue);
+            color: white;
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin-top: 4px;
+            display: inline-block;
+            cursor: pointer;
+        }
+
+        /* Reminder List Container - Scrollable */
+        .reminder-list-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 500px; /* Minimum height */
+            max-height: 600px; /* Maximum height for scroll */
+        }
+
+        .reminder-list-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .reminder-list-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        /* Scrollable Reminder List */
+        .reminder-list {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        /* Scrollbar styling */
+        .reminder-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .reminder-list::-webkit-scrollbar-track {
+            background: var(--light-gray);
+            border-radius: 4px;
+        }
+
+        .reminder-list::-webkit-scrollbar-thumb {
+            background: var(--primary-blue);
+            border-radius: 4px;
+        }
+
+        .reminder-list::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark-blue);
+        }
+
+        /* For Firefox */
+        .reminder-list {
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-blue) var(--light-gray);
+        }
+
+        .reminder-item {
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: var(--transition);
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        .reminder-item:hover {
+            box-shadow: var(--shadow);
+            border-color: var(--primary-blue);
+            cursor: pointer;
+        }
+
+        .reminder-checkbox {
+            width: 18px;
+            height: 18px;
+            margin-top: 2px;
+            cursor: pointer;
+        }
+
+        .reminder-content {
+            flex: 1;
+        }
+
+        .reminder-title {
+            font-weight: 500;
+            margin-bottom: 4px;
+            font-size: 15px;
+        }
+
+        .reminder-description {
+            color: var(--text-light);
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .reminder-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        .reminder-time {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .reminder-category {
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .category-work {
+            background-color: rgba(157, 207, 0, 0.1);
+            color: var(--success-color);
+        }
+
+        .category-personal {
+            background-color: rgba(255, 169, 0, 0.1);
+            color: var(--warning-color);
+        }
+
+        .category-urgent {
+            background-color: rgba(255, 87, 82, 0.1);
+            color: var(--danger-color);
+        }
+
+        .reminder-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: var(--transition);
+        }
+
+        .action-btn:hover {
+            background-color: var(--light-gray);
+            color: var(--text-dark);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-light);
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            color: #d5dce1;
+        }
+
+        /* Modal - Scrollable */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-y: auto; /* Make modal scrollable */
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh; /* Limit modal height */
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .modal-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: var(--text-light);
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .modal-body {
+            padding: 24px;
+            overflow-y: auto; /* Make modal body scrollable */
+            flex: 1;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+            transition: var(--transition);
+            cursor: text;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(47, 198, 246, 0.2);
+            cursor: text;
+        }
+
+        .category-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .category-btn {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            background-color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .category-btn.active {
+            background-color: var(--primary-blue);
+            color: white;
+            border-color: var(--primary-blue);
+        }
+
+        .modal-footer {
+            padding: 20px 24px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            flex-shrink: 0; /* Keep footer visible */
+        }
+
+        /* Custom repeat options */
+        .custom-repeat-options {
+            margin-top: 10px;
+            display: none;
+        }
+
+        .custom-repeat-options.show {
+            display: block;
+        }
+
+        .custom-repeat-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Notification API Button */
+        .notification-permission-btn {
+            background-color: var(--success-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: 10px;
+        }
+
+        .notification-permission-btn:hover {
+            background-color: #8ab800;
+        }
+
+        /* Date with existing reminder */
+        .date-has-reminder {
+            background-color: rgba(157, 207, 0, 0.1);
+            border-color: var(--success-color);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .stats-container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 60px;
+            }
+            
+            .sidebar:not(.collapsed) {
+                position: fixed;
+                z-index: 1000;
+                height: 100%;
+                box-shadow: 4px 0 8px rgba(0, 0, 0, 0.1);
+            }
+            
+            .header {
+                padding: 0 16px;
+            }
+            
+            .content-area {
+                padding: 16px;
+            }
+            
+            .stats-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .reminder-list-container {
+                min-height: 400px;
+                max-height: 500px;
+            }
+            
+            .modal {
+                padding: 10px;
+            }
+            
+            .modal-content {
+                max-height: 95vh;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-title {
+                font-size: 18px;
+            }
+            
+            .header-date {
+                font-size: 12px;
+            }
+            
+            .header-button span {
+                display: none;
+            }
+            
+            .header-button {
+                padding: 8px;
+            }
+            
+            .reminder-list-container {
+                min-height: 300px;
+                max-height: 400px;
+            }
+        }
+        /* Installation Guide Styles */
+.device-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin: 20px 0;
+}
+
+.device-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 10px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background-color: white;
+    cursor: pointer;
+    transition: var(--transition);
+    gap: 10px;
+}
+
+.device-btn:hover {
+    border-color: var(--primary-blue);
+    background-color: rgba(47, 198, 246, 0.05);
+}
+
+.device-btn.active {
+    border-color: var(--primary-blue);
+    background-color: rgba(47, 198, 246, 0.1);
+}
+
+.device-btn i {
+    font-size: 32px;
+    margin-bottom: 5px;
+}
+
+.device-btn span {
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.step {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: var(--light-gray);
+    border-radius: 6px;
+    align-items: flex-start;
+}
+
+.step-number {
+    background-color: var(--primary-blue);
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.step-content {
+    flex: 1;
+}
+
+.step-content strong {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--text-dark);
+}
+
+.step-content p {
+    color: var(--text-light);
+    font-size: 14px;
+    margin: 0;
+}
+
+.install-guide h4 {
+    margin: 20px 0 15px 0;
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.install-guide h4 i {
+    font-size: 20px;
+}
+
+.note {
+    background-color: rgba(255, 169, 0, 0.1);
+    border-left: 3px solid var(--warning-color);
+    padding: 10px;
+    margin: 15px 0;
+    font-size: 13px;
+    color: var(--text-dark);
+}
+
+.note i {
+    color: var(--warning-color);
+    margin-right: 5px;
+}
+
+@media (max-width: 768px) {
+    .device-options {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Notification permission button */
+.notification-permission-btn {
+    background-color: var(--success-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 10px;
+    transition: var(--transition);
+    animation: pulse 2s infinite;
+}
+
+.notification-permission-btn:hover {
+    background-color: #8ab800;
+    transform: translateY(-2px);
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(157, 207, 0, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(157, 207, 0, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(157, 207, 0, 0); }
+}
+
+/* Notification status indicators */
+.notification-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-left: 10px;
+}
+
+.notification-status.enabled {
+    background-color: rgba(157, 207, 0, 0.1);
+    color: var(--success-color);
+}
+
+.notification-status.disabled {
+    background-color: rgba(255, 87, 82, 0.1);
+    color: var(--danger-color);
+}
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="logo-section">
+                <div class="logo">R</div>
+                <div class="logo-text">Reminder</div>
+            </div>
+            
+            <div class="nav-section">
+                <h3>Views</h3>
+                <div class="nav-item active" data-view="today">
+                    <div class="nav-icon"><i class="fas fa-calendar-day"></i></div>
+                    <div class="nav-text">Today</div>
+                    <div class="counter" id="today-counter">3</div>
+                </div>
+                <div class="nav-item" data-view="upcoming">
+                    <div class="nav-icon"><i class="fas fa-calendar-week"></i></div>
+                    <div class="nav-text">Upcoming</div>
+                    <div class="counter" id="upcoming-counter">5</div>
+                </div>
+                <div class="nav-item" data-view="all">
+                    <div class="nav-icon"><i class="fas fa-tasks"></i></div>
+                    <div class="nav-text">All Reminders</div>
+                </div>
+                <div class="nav-item" data-view="completed">
+                    <div class="nav-icon"><i class="fas fa-check-circle"></i></div>
+                    <div class="nav-text">Completed</div>
+                </div>
+                
+                <h3>Categories</h3>
+                <div class="nav-item" data-category="work">
+                    <div class="nav-icon"><i class="fas fa-briefcase"></i></div>
+                    <div class="nav-text">Work</div>
+                </div>
+                <div class="nav-item" data-category="personal">
+                    <div class="nav-icon"><i class="fas fa-user"></i></div>
+                    <div class="nav-text">Personal</div>
+                </div>
+                <div class="nav-item" data-category="urgent">
+                    <div class="nav-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                    <div class="nav-text">Urgent</div>
+                </div>
+                
+                <h3>Settings</h3>
+                <div class="nav-item" id="install-nav">
+                    <div class="nav-icon"><i class="fas fa-download"></i></div>
+                    <div class="nav-text">Install App</div>
+                </div>
+                <div class="nav-item" id="settings-nav">
+                    <div class="nav-icon"><i class="fas fa-cog"></i></div>
+                    <div class="nav-text">Settings</div>
+                </div>
+            </div>
+            
+            <div class="sidebar-footer">
+                <button class="toggle-sidebar" id="toggle-sidebar">
+                    <i class="fas fa-chevron-left"></i>
+                    <span>Collapse</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <div class="header-left">
+                    <h1 class="header-title" id="view-title">Today's Reminders</h1>
+                    <div class="header-date" id="current-date">Thursday, January 16, 2025</div>
+                </div>
+                <div class="header-right">
+                    <button class="header-button outline" id="view-toggle">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Calendar View</span>
+                    </button>
+                    <button class="header-button" id="add-reminder">
+                        <i class="fas fa-plus"></i>
+                        <span>New Reminder</span>
+                    </button>
+                    <button class="notification-permission-btn" id="notification-permission-btn" style="display: none;">
+                        <i class="fas fa-bell"></i>
+                        <span>Enable Notifications</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Content Area - Now Scrollable -->
+            <div class="content-area" id="content-area">
+                <!-- Stats - Updated with all counters -->
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div class="stat-value total" id="total-reminders">12</div>
+                        <div class="stat-label">Total Reminders</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value pending" id="pending-reminders">8</div>
+                        <div class="stat-label">Pending</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value completed" id="completed-reminders">4</div>
+                        <div class="stat-label">Completed</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value urgent" id="urgent-reminders">2</div>
+                        <div class="stat-label">Urgent</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value personal" id="personal-reminders">3</div>
+                        <div class="stat-label">Personal</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value work" id="work-reminders">4</div>
+                        <div class="stat-label">Work</div>
+                    </div>
+                </div>
+                
+                <!-- Calendar View -->
+                <div class="calendar-container" id="calendar-view">
+                    <div class="calendar-header">
+                        <div class="calendar-day-header">Mon</div>
+                        <div class="calendar-day-header">Tue</div>
+                        <div class="calendar-day-header">Wed</div>
+                        <div class="calendar-day-header">Thu</div>
+                        <div class="calendar-day-header">Fri</div>
+                        <div class="calendar-day-header">Sat</div>
+                        <div class="calendar-day-header">Sun</div>
+                    </div>
+                    <div class="calendar-grid" id="calendar-grid">
+                        <!-- Calendar will be populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- Reminder List View - Scrollable -->
+                <div class="reminder-list-container" id="list-view" style="display: none;">
+                    <div class="reminder-list-header">
+                        <h3 id="list-title">Today's Reminders</h3>
+                        <div class="reminder-actions">
+                            <button class="action-btn" id="sort-reminders" title="Sort">
+                                <i class="fas fa-sort-amount-down"></i>
+                            </button>
+                            <button class="action-btn" id="filter-reminders" title="Filter">
+                                <i class="fas fa-filter"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="reminder-list" id="reminder-list">
+                        <!-- Reminders will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Reminder Form Modal - Now Scrollable -->
+    <div class="modal" id="reminder-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Create New Reminder</h3>
+                <button class="close-modal" id="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="reminder-title">Title *</label>
+                    <input type="text" id="reminder-title" class="form-control" placeholder="Enter reminder title">
+                </div>
+                <div class="form-group">
+                    <label for="reminder-description">Description</label>
+                    <textarea id="reminder-description" class="form-control" rows="3" placeholder="Enter description (optional)"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="reminder-date">Date & Time *</label>
+                    <input type="datetime-local" id="reminder-date" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <div class="category-buttons">
+                        <button class="category-btn active" data-category="general">General</button>
+                        <button class="category-btn" data-category="work">Work</button>
+                        <button class="category-btn" data-category="personal">Personal</button>
+                        <button class="category-btn" data-category="urgent">Urgent</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="reminder-repeat">Repeat</label>
+                    <select id="reminder-repeat" class="form-control">
+                        <option value="none">Never</option>
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="days">Days</option>
+                        <option value="once">Once</option>
+                    </select>
+                    <div class="custom-repeat-options" id="custom-repeat-options">
+                        <div class="custom-repeat-input">
+                            <input type="number" id="custom-days" class="form-control" min="1" max="500" placeholder="Enter days (1-500)">
+                            <span>days</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="header-button secondary" id="cancel-reminder">Cancel</button>
+                <button class="header-button primary" id="save-reminder">Save Reminder</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <div class="notification-icon"><i class="fas fa-check"></i></div>
+        <div class="notification-content">
+            <div class="notification-title">Success</div>
+            <div class="notification-message">Reminder created successfully</div>
+        </div>
+    </div>
+
+    <!-- Installation Guide Modal -->
+<div class="modal" id="install-modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header">
+            <h3>Install Reminder App</h3>
+            <button class="close-modal" id="close-install-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="device-selection" id="device-selection">
+                <h4>Select Your Device</h4>
+                <div class="device-options">
+                    <button class="device-btn" data-device="iphone">
+                        <i class="fab fa-apple"></i>
+                        <span>iPhone</span>
+                    </button>
+                    <button class="device-btn" data-device="android">
+                        <i class="fab fa-android"></i>
+                        <span>Android</span>
+                    </button>
+                    <button class="device-btn" data-device="desktop">
+                        <i class="fas fa-desktop"></i>
+                        <span>Desktop/Laptop</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="install-steps" id="install-steps" style="display: none;">
+                <div id="ios-steps" style="display: none;">
+                    <h4><i class="fab fa-apple"></i> Install on iPhone/iPad</h4>
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <strong>Open in Safari</strong>
+                            <p>Make sure you're using the Safari browser (not Chrome or other browsers).</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <strong>Tap the Share Button</strong>
+                            <p>Tap the <i class="fas fa-share-square"></i> icon at the bottom of Safari.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <strong>Scroll and Select "Add to Home Screen"</strong>
+                            <p>Scroll down in the share menu and tap "Add to Home Screen".</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <strong>Name & Install</strong>
+                            <p>Enter "Reminder" as the name and tap "Add" in the top-right corner.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="android-steps" style="display: none;">
+                    <h4><i class="fab fa-android"></i> Install on Android</h4>
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <strong>Open in Chrome or Edge</strong>
+                            <p>Use Chrome, Edge, or Samsung Internet browser (not Firefox).</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <strong>Tap the Menu Button</strong>
+                            <p>Tap the three dots (⋮) in the top-right corner of your browser.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <strong>Select "Install App" or "Add to Home Screen"</strong>
+                            <p>Tap "Install app" or "Add to Home Screen" from the menu.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <strong>Confirm Installation</strong>
+                            <p>Tap "Install" or "Add" in the popup that appears.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="desktop-steps" style="display: none;">
+                    <h4><i class="fas fa-desktop"></i> Install on Desktop/Laptop</h4>
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <strong>Open in Chrome/Edge/Safari</strong>
+                            <p>Use Chrome, Edge, or Safari browser on your computer.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <strong>Look for the Install Button</strong>
+                            <p>In Chrome/Edge, you'll see an install icon <i class="fas fa-download"></i> in the address bar.</p>
+                            <p>In Safari, go to File > Add to Dock.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <strong>Click the Install Button</strong>
+                            <p>Click the install icon or menu option to add the app.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <strong>Confirm Installation</strong>
+                            <p>Follow the prompts to add the app to your computer.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="pwa-install-button-container" style="margin-top: 20px; display: none;" id="pwa-install-button">
+                    <button class="header-button" id="pwa-install-btn" style="width: 100%;">
+                        <i class="fas fa-download"></i>
+                        <span>Add to Home Screen</span>
+                    </button>
+                    <p class="note" style="text-align: center; margin-top: 10px; color: var(--text-light); font-size: 12px;">
+                        <i class="fas fa-info-circle"></i> This button may appear automatically in supported browsers
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="header-button secondary" id="back-to-devices" style="display: none;">← Back to Devices</button>
+            <button class="header-button primary" id="install-understood">Got it, thanks!</button>
+        </div>
+    </div>
+</div>
+    <script>
+
+        // Enhanced notification permission check
+function checkNotificationPermission() {
+    if (!("Notification" in window)) {
+        console.log("This browser does not support notifications");
+        if (notificationPermissionBtn) {
+            notificationPermissionBtn.style.display = 'none';
+        }
+        showNotificationInfo("Your browser doesn't support notifications", "warning");
+        return;
+    }
+    
+    // Check if running from file:// (won't work)
+    if (window.location.protocol === 'file:') {
+        console.log('Running from file:// - notifications require localhost');
+        if (notificationPermissionBtn) {
+            notificationPermissionBtn.style.display = 'flex';
+            notificationPermissionBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i><span>Run on Localhost</span>';
+            notificationPermissionBtn.onclick = () => {
+                alert('Notifications require running on a local server.\n\nPlease run one of these commands in your terminal:\n\n1. python -m http.server 8000\n2. npx http-server -p 8000\n\nThen open: http://localhost:8000');
+            };
+        }
+        return;
+    }
+    
+    // Check current permission status
+    switch(Notification.permission) {
+        case "granted":
+            console.log("Notifications already enabled");
+            if (notificationPermissionBtn) {
+                notificationPermissionBtn.style.display = 'none';
+            }
+            state.notificationPermission = "granted";
+            
+            // Show enabled status
+            showNotificationStatus("enabled");
+            break;
+            
+        case "denied":
+            console.log("Notifications denied by user");
+            if (notificationPermissionBtn) {
+                notificationPermissionBtn.style.display = 'flex';
+                notificationPermissionBtn.innerHTML = '<i class="fas fa-bell-slash"></i><span>Notifications Blocked</span>';
+                notificationPermissionBtn.style.backgroundColor = 'var(--danger-color)';
+                notificationPermissionBtn.onclick = () => {
+                    alert('You have blocked notifications. To enable them:\n\n1. Click the lock icon in your browser address bar\n2. Find "Notifications" in site settings\n3. Change from "Block" to "Allow"\n4. Refresh this page');
+                };
+            }
+            state.notificationPermission = "denied";
+            showNotificationStatus("disabled");
+            break;
+            
+        case "default":
+            console.log("Notification permission not yet requested");
+            if (notificationPermissionBtn) {
+                notificationPermissionBtn.style.display = 'flex';
+                notificationPermissionBtn.innerHTML = '<i class="fas fa-bell"></i><span>Enable Notifications</span>';
+                notificationPermissionBtn.style.backgroundColor = 'var(--success-color)';
+                notificationPermissionBtn.onclick = requestNotificationPermission;
+            }
+            state.notificationPermission = "default";
+            break;
+    }
+}
+
+// Enhanced request notification permission
+function requestNotificationPermission() {
+    if (!("Notification" in window)) {
+        showNotification("Your browser doesn't support notifications", "warning");
+        return;
+    }
+    
+    // Show loading state
+    if (notificationPermissionBtn) {
+        notificationPermissionBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Requesting...</span>';
+        notificationPermissionBtn.disabled = true;
+    }
+    
+    Notification.requestPermission().then(function(permission) {
+        state.notificationPermission = permission;
+        
+        // Reset button
+        if (notificationPermissionBtn) {
+            notificationPermissionBtn.disabled = false;
+        }
+        
+        checkNotificationPermission();
+        
+        if (permission === "granted") {
+            showNotification("🎉 Notifications enabled! You'll get alerts 5 minutes before each reminder.", "success");
+            
+            // Schedule notifications for existing reminders
+            scheduleAllNotifications();
+            
+            // Show success state for 3 seconds
+            if (notificationPermissionBtn) {
+                notificationPermissionBtn.innerHTML = '<i class="fas fa-check"></i><span>Enabled!</span>';
+                notificationPermissionBtn.style.backgroundColor = 'var(--success-color)';
+                setTimeout(() => {
+                    notificationPermissionBtn.style.display = 'none';
+                }, 3000);
+            }
+        } else if (permission === "denied") {
+            showNotification("❌ Notifications blocked. You won't receive reminder alerts.", "warning");
+        }
+    });
+}
+
+// Show notification status in header
+function showNotificationStatus(status) {
+    // Remove existing status if any
+    const existingStatus = document.querySelector('.notification-status');
+    if (existingStatus) {
+        existingStatus.remove();
+    }
+    
+    if (status === "enabled" && state.notificationPermission === "granted") {
+        const statusEl = document.createElement('div');
+        statusEl.className = 'notification-status enabled';
+        statusEl.innerHTML = '<i class="fas fa-bell"></i> Notifications Enabled';
+        document.querySelector('.header-right').prepend(statusEl);
+    } else if (status === "disabled" && state.notificationPermission === "denied") {
+        const statusEl = document.createElement('div');
+        statusEl.className = 'notification-status disabled';
+        statusEl.innerHTML = '<i class="fas fa-bell-slash"></i> Notifications Blocked';
+        document.querySelector('.header-right').prepend(statusEl);
+    }
+}
+
+// Enhanced notification info
+function showNotificationInfo(message, type) {
+    const infoBox = document.createElement('div');
+    infoBox.className = 'notification-info';
+    infoBox.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: ${type === 'warning' ? '#fff3cd' : '#d1ecf1'};
+        border: 1px solid ${type === 'warning' ? '#ffeaa7' : '#bee5eb'};
+        color: ${type === 'warning' ? '#856404' : '#0c5460'};
+        padding: 12px 20px;
+        border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        max-width: 400px;
+        animation: slideUp 0.3s ease;
+    `;
+    
+    infoBox.innerHTML = `
+        <i class="fas fa-${type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+        <div>
+            <strong>${type === 'warning' ? 'Notice' : 'Info'}:</strong>
+            <div style="font-size: 14px;">${message}</div>
+        </div>
+        <button onclick="this.parentElement.remove()" style="background: none; border: none; color: inherit; cursor: pointer; margin-left: auto;">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    
+    document.body.appendChild(infoBox);
+    
+    // Add animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideUp {
+            from { transform: translate(-50%, 100%); opacity: 0; }
+            to { transform: translate(-50%, 0); opacity: 1; }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Auto remove after 8 seconds
+    setTimeout(() => {
+        if (infoBox.parentNode) {
+            infoBox.style.opacity = '0';
+            infoBox.style.transition = 'opacity 0.3s ease';
+            setTimeout(() => infoBox.remove(), 300);
+        }
+    }, 8000);
+}
+// Application state
+const state = {
+    reminders: JSON.parse(localStorage.getItem('reminders')) || [],
+    currentView: 'today',
+    currentCategory: null,
+    isCalendarView: true,
+    editingReminderId: null,
+    deferredPrompt: null,
+    notificationPermission: Notification.permission
+};
+
+// DOM Elements
+const sidebar = document.getElementById('sidebar');
+const toggleSidebar = document.getElementById('toggle-sidebar');
+const navItems = document.querySelectorAll('.nav-item');
+const viewTitle = document.getElementById('view-title');
+const currentDate = document.getElementById('current-date');
+const viewToggle = document.getElementById('view-toggle');
+const addReminderBtn = document.getElementById('add-reminder');
+const contentArea = document.getElementById('content-area');
+const calendarView = document.getElementById('calendar-view');
+const listView = document.getElementById('list-view');
+const reminderList = document.getElementById('reminder-list');
+const calendarGrid = document.getElementById('calendar-grid');
+const reminderModal = document.getElementById('reminder-modal');
+const closeModal = document.getElementById('close-modal');
+const cancelReminder = document.getElementById('cancel-reminder');
+const saveReminderBtn = document.getElementById('save-reminder');
+const modalTitle = document.getElementById('modal-title');
+const categoryButtons = document.querySelectorAll('.category-btn');
+const repeatSelect = document.getElementById('reminder-repeat');
+const customRepeatOptions = document.getElementById('custom-repeat-options');
+const customDaysInput = document.getElementById('custom-days');
+const settingsNav = document.getElementById('settings-nav');
+const notificationPermissionBtn = document.getElementById('notification-permission-btn');
+
+// Stats elements
+const totalRemindersEl = document.getElementById('total-reminders');
+const pendingRemindersEl = document.getElementById('pending-reminders');
+const completedRemindersEl = document.getElementById('completed-reminders');
+const urgentRemindersEl = document.getElementById('urgent-reminders');
+const personalRemindersEl = document.getElementById('personal-reminders');
+const workRemindersEl = document.getElementById('work-reminders');
+const todayCounter = document.getElementById('today-counter');
+const upcomingCounter = document.getElementById('upcoming-counter');
+
+// Initialize the app
+function initApp() {
+    // Set current date
+    const now = new Date();
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    currentDate.textContent = now.toLocaleDateString('en-US', options);
+    
+    // Load reminders from localStorage
+    const savedReminders = localStorage.getItem('reminders');
+    
+    // If no reminders in storage, start fresh
+    if (!savedReminders) {
+        state.reminders = [];
+        updateAllStats();
+        setupEventListeners();
+        checkNotificationPermission();
+        setupInstallationGuide();
+        setupInstallPromptListener();
+        return;
+    }
+    
+    // If there are saved reminders, load them
+    try {
+        state.reminders = JSON.parse(savedReminders);
+        // Filter out any invalid reminders
+        state.reminders = state.reminders.filter(r => r && r.id && r.title);
+        
+        // Parse date strings back to Date objects
+        state.reminders.forEach(reminder => {
+            if (typeof reminder.date === 'string') {
+                reminder.date = new Date(reminder.date);
+            }
+        });
+    } catch (e) {
+        console.error("Error loading reminders:", e);
+        state.reminders = [];
+    }
+    
+    // Render initial view
+    renderCalendar();
+    updateAllStats();
+    renderReminderList();
+    
+    // Setup all event listeners
+    setupEventListeners();
+    
+    // Check notification permission
+    checkNotificationPermission();
+    
+    // Setup installation guide
+    setupInstallationGuide();
+    
+    // Setup install prompt listener
+    setupInstallPromptListener();
+    
+    // Set up notification scheduling for existing reminders
+    scheduleAllNotifications();
+    
+    // Check if app is running as PWA
+    checkPWAStatus();
+}
+
+// Setup install prompt listener
+function setupInstallPromptListener() {
+    // Listen for beforeinstallprompt event
+    window.addEventListener('beforeinstallprompt', (e) => {
+        // Prevent the mini-infobar from appearing on mobile
+        e.preventDefault();
+        // Stash the event so it can be triggered later
+        state.deferredPrompt = e;
+        console.log('PWA install prompt available');
+        
+        // Update UI to show install button is available
+        const installNav = document.getElementById('install-nav');
+        if (installNav) {
+            installNav.innerHTML = `
+                <div class="nav-icon"><i class="fas fa-download"></i></div>
+                <div class="nav-text">Install App</div>
+                <div class="counter" style="background-color: var(--success-color);">Ready</div>
+            `;
+        }
+        
+        // Update the install button in the modal if it exists
+        const pwaInstallBtn = document.getElementById('pwa-install-btn');
+        if (pwaInstallBtn) {
+            pwaInstallBtn.style.display = 'block';
+        }
+    });
+}
+
+// Check if app is running as PWA
+function checkPWAStatus() {
+    // Check if app is running in standalone mode (installed as PWA)
+    if (window.matchMedia('(display-mode: standalone)').matches || 
+        window.navigator.standalone === true) {
+        console.log('App is running as PWA');
+        
+        // Update install nav item to show it's installed
+        const installNav = document.getElementById('install-nav');
+        if (installNav) {
+            installNav.innerHTML = `
+                <div class="nav-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="nav-text">App Installed</div>
+                <div class="counter" style="background-color: var(--success-color);"><i class="fas fa-check"></i></div>
+            `;
+            installNav.style.pointerEvents = 'none';
+            installNav.style.opacity = '0.7';
+        }
+    }
+}
+
+// Handle installation guide
+function setupInstallationGuide() {
+    const installNav = document.getElementById('install-nav');
+    const installModal = document.getElementById('install-modal');
+    const closeInstallModal = document.getElementById('close-install-modal');
+    const deviceButtons = document.querySelectorAll('.device-btn');
+    const deviceSelection = document.getElementById('device-selection');
+    const installSteps = document.getElementById('install-steps');
+    const backToDevices = document.getElementById('back-to-devices');
+    const installUnderstood = document.getElementById('install-understood');
+    const pwaInstallButton = document.getElementById('pwa-install-button');
+    const pwaInstallBtn = document.getElementById('pwa-install-btn');
+    
+    // Open install modal when clicking install nav item
+    if (installNav) {
+        installNav.addEventListener('click', () => {
+            // Check if app is already installed
+            if (window.matchMedia('(display-mode: standalone)').matches || 
+                window.navigator.standalone === true) {
+                showNotification('App is already installed!', 'info');
+                return;
+            }
+            
+            installModal.classList.add('show');
+            deviceSelection.style.display = 'block';
+            installSteps.style.display = 'none';
+            backToDevices.style.display = 'none';
+            installUnderstood.textContent = 'Got it, thanks!';
+            
+            // Reset device buttons
+            deviceButtons.forEach(btn => btn.classList.remove('active'));
+            
+            // Hide PWA install button initially
+            if (pwaInstallButton) {
+                pwaInstallButton.style.display = 'none';
+            }
+        });
+    }
+    
+    // Close install modal
+    if (closeInstallModal) {
+        closeInstallModal.addEventListener('click', () => {
+            installModal.classList.remove('show');
+        });
+    }
+    
+    // Device selection
+    if (deviceButtons) {
+        deviceButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Set active device
+                deviceButtons.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Show installation steps for selected device
+                const device = this.getAttribute('data-device');
+                
+                // Hide all step sections
+                document.getElementById('ios-steps').style.display = 'none';
+                document.getElementById('android-steps').style.display = 'none';
+                document.getElementById('desktop-steps').style.display = 'none';
+                
+                // Show selected device steps
+                if (device === 'iphone') {
+                    document.getElementById('ios-steps').style.display = 'block';
+                } else if (device === 'android') {
+                    document.getElementById('android-steps').style.display = 'block';
+                } else if (device === 'desktop') {
+                    document.getElementById('desktop-steps').style.display = 'block';
+                }
+                
+                // Hide device selection, show steps
+                deviceSelection.style.display = 'none';
+                installSteps.style.display = 'block';
+                backToDevices.style.display = 'inline-block';
+                installUnderstood.textContent = 'Got it, thanks!';
+                
+                // Show PWA install button for desktop if available
+                if (pwaInstallButton) {
+                    if (device === 'desktop' && state.deferredPrompt) {
+                        pwaInstallButton.style.display = 'block';
+                        installUnderstood.textContent = 'Skip for now';
+                    } else {
+                        pwaInstallButton.style.display = 'none';
+                    }
+                }
+            });
+        });
+    }
+    
+    // Back to device selection
+    if (backToDevices) {
+        backToDevices.addEventListener('click', () => {
+            deviceSelection.style.display = 'block';
+            installSteps.style.display = 'none';
+            backToDevices.style.display = 'none';
+            installUnderstood.textContent = 'Got it, thanks!';
+            if (pwaInstallButton) {
+                pwaInstallButton.style.display = 'none';
+            }
+        });
+    }
+    
+    // PWA install button click
+    if (pwaInstallBtn) {
+        pwaInstallBtn.addEventListener('click', () => {
+            if (state.deferredPrompt) {
+                state.deferredPrompt.prompt();
+                
+                state.deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the install prompt');
+                        showNotification('Reminder app installed successfully!');
+                        installModal.classList.remove('show');
+                        
+                        // Update install nav item
+                        const installNav = document.getElementById('install-nav');
+                        if (installNav) {
+                            installNav.innerHTML = `
+                                <div class="nav-icon"><i class="fas fa-check-circle"></i></div>
+                                <div class="nav-text">App Installed</div>
+                                <div class="counter" style="background-color: var(--success-color);"><i class="fas fa-check"></i></div>
+                            `;
+                            installNav.style.pointerEvents = 'none';
+                            installNav.style.opacity = '0.7';
+                        }
+                    } else {
+                        console.log('User dismissed the install prompt');
+                        showNotification('Installation cancelled', 'warning');
+                    }
+                    state.deferredPrompt = null;
+                });
+            }
+        });
+    }
+    
+    // Close modal when understood
+    if (installUnderstood) {
+        installUnderstood.addEventListener('click', () => {
+            // If we have deferred prompt and it's for desktop, show it
+            const selectedDevice = Array.from(deviceButtons).find(btn => btn.classList.contains('active'));
+            
+            if (state.deferredPrompt && selectedDevice && selectedDevice.getAttribute('data-device') === 'desktop') {
+                state.deferredPrompt.prompt();
+                
+                state.deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        showNotification('Reminder app installed successfully!');
+                        // Update install nav item
+                        const installNav = document.getElementById('install-nav');
+                        if (installNav) {
+                            installNav.innerHTML = `
+                                <div class="nav-icon"><i class="fas fa-check-circle"></i></div>
+                                <div class="nav-text">App Installed</div>
+                                <div class="counter" style="background-color: var(--success-color);"><i class="fas fa-check"></i></div>
+                            `;
+                            installNav.style.pointerEvents = 'none';
+                            installNav.style.opacity = '0.7';
+                        }
+                    } else {
+                        showNotification('Installation skipped', 'info');
+                    }
+                    state.deferredPrompt = null;
+                    installModal.classList.remove('show');
+                });
+            } else {
+                installModal.classList.remove('show');
+            }
+        });
+    }
+}
+
+// Save reminders to localStorage
+function saveReminders() {
+    localStorage.setItem('reminders', JSON.stringify(state.reminders));
+    updateAllStats();
+}
+
+// Update all statistics
+function updateAllStats() {
+    const total = state.reminders.length;
+    const completed = state.reminders.filter(r => r.completed).length;
+    const pending = total - completed; // Correct calculation
+    
+    const urgent = state.reminders.filter(r => r.category === 'urgent' && !r.completed).length;
+    const personal = state.reminders.filter(r => r.category === 'personal' && !r.completed).length;
+    const work = state.reminders.filter(r => r.category === 'work' && !r.completed).length;
+    
+    // Today's reminders
+    const today = new Date();
+    const todayReminders = state.reminders.filter(r => {
+        const reminderDate = new Date(r.date);
+        return reminderDate.getDate() === today.getDate() &&
+               reminderDate.getMonth() === today.getMonth() &&
+               reminderDate.getFullYear() === today.getFullYear() &&
+               !r.completed;
+    });
+    
+    // Upcoming reminders (next 7 days)
+    const upcomingDate = new Date();
+    upcomingDate.setDate(upcomingDate.getDate() + 7);
+    const upcomingReminders = state.reminders.filter(r => {
+        const reminderDate = new Date(r.date);
+        return reminderDate > today && 
+               reminderDate <= upcomingDate && 
+               !r.completed;
+    }).length;
+    
+    // Update DOM elements
+    totalRemindersEl.textContent = total;
+    pendingRemindersEl.textContent = pending;
+    completedRemindersEl.textContent = completed;
+    urgentRemindersEl.textContent = urgent;
+    personalRemindersEl.textContent = personal;
+    workRemindersEl.textContent = work;
+    todayCounter.textContent = todayReminders.length;
+    upcomingCounter.textContent = upcomingReminders;
+}
+
+// Render calendar
+function renderCalendar() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    
+    // Get first day of month and total days
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const totalDays = lastDay.getDate();
+    const firstDayIndex = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
+    
+    calendarGrid.innerHTML = '';
+    
+    // Previous month days
+    const prevMonthLastDay = new Date(year, month, 0).getDate();
+    for (let i = firstDayIndex - 1; i >= 0; i--) {
+        const day = prevMonthLastDay - i;
+        const date = new Date(year, month - 1, day);
+        createCalendarDay(date, true);
+    }
+    
+    // Current month days
+    for (let i = 1; i <= totalDays; i++) {
+        const date = new Date(year, month, i);
+        createCalendarDay(date, false);
+    }
+    
+    // Next month days
+    const totalCells = 42; // 6 weeks * 7 days
+    const nextMonthDays = totalCells - (firstDayIndex + totalDays);
+    for (let i = 1; i <= nextMonthDays; i++) {
+        const date = new Date(year, month + 1, i);
+        createCalendarDay(date, true);
+    }
+}
+
+// Create calendar day element
+function createCalendarDay(date, isOtherMonth) {
+    const dayElement = document.createElement('div');
+    dayElement.className = 'calendar-day';
+    
+    if (isOtherMonth) {
+        dayElement.classList.add('other-month');
+    }
+    
+    // Check if it's today
+    const today = new Date();
+    if (date.getDate() === today.getDate() && 
+        date.getMonth() === today.getMonth() && 
+        date.getFullYear() === today.getFullYear()) {
+        dayElement.classList.add('today');
+    }
+    
+    // Day number
+    const dayNumber = document.createElement('div');
+    dayNumber.className = 'day-number';
+    dayNumber.textContent = date.getDate();
+    dayElement.appendChild(dayNumber);
+    
+    // Add reminders for this day
+    const dayReminders = getFilteredReminders().filter(reminder => {
+        const reminderDate = new Date(reminder.date);
+        return reminderDate.getDate() === date.getDate() &&
+               reminderDate.getMonth() === date.getMonth() &&
+               reminderDate.getFullYear() === date.getFullYear() &&
+               !reminder.completed;
+    });
+    
+    if (dayReminders.length > 0) {
+        const badge = document.createElement('div');
+        badge.className = 'reminder-badge';
+        badge.textContent = `${dayReminders.length} reminder${dayReminders.length > 1 ? 's' : ''}`;
+        dayElement.appendChild(badge);
+        
+        // Mark dates that already have reminders
+        dayElement.classList.add('date-has-reminder');
+    }
+    
+    // Add click event to create new reminder
+    dayElement.addEventListener('click', () => {
+        openReminderForm(date);
+    });
+    
+    calendarGrid.appendChild(dayElement);
+}
+
+// Get filtered reminders based on current view and category
+function getFilteredReminders() {
+    let filtered = [...state.reminders];
+    
+    // Apply category filter
+    if (state.currentCategory) {
+        filtered = filtered.filter(reminder => reminder.category === state.currentCategory);
+    }
+    
+    // Apply view filter
+    switch(state.currentView) {
+        case 'today':
+            const today = new Date();
+            filtered = filtered.filter(reminder => {
+                const reminderDate = new Date(reminder.date);
+                return reminderDate.getDate() === today.getDate() &&
+                       reminderDate.getMonth() === today.getMonth() &&
+                       reminderDate.getFullYear() === today.getFullYear();
+            });
+            break;
+            
+        case 'upcoming':
+            const now = new Date();
+            filtered = filtered.filter(reminder => 
+                new Date(reminder.date) > now && !reminder.completed
+            );
+            filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
+            break;
+            
+        case 'completed':
+            filtered = filtered.filter(reminder => reminder.completed);
+            filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+            break;
+            
+        case 'all':
+            filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
+            break;
+    }
+    
+    return filtered;
+}
+
+// Render reminder list
+function renderReminderList() {
+    const filteredReminders = getFilteredReminders();
+    
+    if (filteredReminders.length === 0) {
+        let message = '';
+        if (state.currentView === 'completed') {
+            message = 'No completed reminders yet';
+        } else if (state.currentCategory) {
+            message = `No ${state.currentCategory} reminders found`;
+        } else if (state.currentView === 'upcoming') {
+            message = 'No upcoming reminders';
+        } else if (state.currentView === 'today') {
+            message = 'No reminders for today';
+        } else {
+            message = 'Create your first reminder!';
+        }
+        
+        reminderList.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-bell-slash"></i>
+                <h3>No reminders found</h3>
+                <p>${message}</p>
+            </div>
+        `;
+        return;
+    }
+    
+    reminderList.innerHTML = '';
+    
+    filteredReminders.forEach(reminder => {
+        const reminderElement = document.createElement('div');
+        reminderElement.className = 'reminder-item';
+        
+        const date = new Date(reminder.date);
+        const timeString = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const dateString = date.toLocaleDateString();
+        
+        let repeatText = '';
+        if (reminder.repeat && reminder.repeat !== 'none') {
+            if (reminder.repeat === 'days') {
+                repeatText = `${reminder.customDays || 1} days`;
+            } else {
+                repeatText = reminder.repeat.charAt(0).toUpperCase() + reminder.repeat.slice(1);
+            }
+        }
+        
+        reminderElement.innerHTML = `
+            <input type="checkbox" class="reminder-checkbox" ${reminder.completed ? 'checked' : ''} data-id="${reminder.id}">
+            <div class="reminder-content">
+                <div class="reminder-title">${reminder.title}</div>
+                ${reminder.description ? `<div class="reminder-description">${reminder.description}</div>` : ''}
+                <div class="reminder-meta">
+                    <div class="reminder-time">
+                        <i class="far fa-clock"></i>
+                        ${dateString} at ${timeString}
+                    </div>
+                    <span class="reminder-category category-${reminder.category}">
+                        ${reminder.category.charAt(0).toUpperCase() + reminder.category.slice(1)}
+                    </span>
+                    ${repeatText ? `<span style="color: var(--primary-blue);"><i class="fas fa-redo"></i> ${repeatText}</span>` : ''}
+                    ${reminder.completed ? '<span style="color: var(--success-color);"><i class="fas fa-check"></i> Completed</span>' : ''}
+                </div>
+            </div>
+            <div class="reminder-actions">
+                <button class="action-btn edit-reminder" data-id="${reminder.id}" title="Edit">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="action-btn delete-reminder" data-id="${reminder.id}" title="Delete">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        `;
+        
+        reminderList.appendChild(reminderElement);
+    });
+    
+    // Add event listeners to checkboxes
+    document.querySelectorAll('.reminder-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const id = parseInt(this.getAttribute('data-id'));
+            toggleReminderComplete(id);
+        });
+    });
+    
+    // Add event listeners to edit buttons
+    document.querySelectorAll('.edit-reminder').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = parseInt(this.getAttribute('data-id'));
+            editReminder(id);
+        });
+    });
+    
+    // Add event listeners to delete buttons
+    document.querySelectorAll('.delete-reminder').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = parseInt(this.getAttribute('data-id'));
+            deleteReminder(id);
+        });
+    });
+}
+
+// Toggle reminder completion
+function toggleReminderComplete(id) {
+    const reminder = state.reminders.find(r => r.id === id);
+    if (reminder) {
+        reminder.completed = !reminder.completed;
+        saveReminders();
+        renderReminderList();
+        renderCalendar();
+        showNotification(`Reminder "${reminder.title}" marked as ${reminder.completed ? 'completed' : 'incomplete'}`);
+        
+        // If it's a repeating reminder and completed, create the next one
+        if (reminder.completed && reminder.repeat && reminder.repeat !== 'none' && reminder.repeat !== 'once') {
+            scheduleNextRepeat(reminder);
+        }
+    }
+}
+
+// Schedule next repeat for completed repeating reminders
+function scheduleNextRepeat(reminder) {
+    if (!reminder.repeat || reminder.repeat === 'none' || reminder.repeat === 'once') return;
+    
+    const newReminder = {...reminder};
+    newReminder.id = state.reminders.length > 0 ? Math.max(...state.reminders.map(r => r.id)) + 1 : 1;
+    newReminder.completed = false;
+    
+    const currentDate = new Date(reminder.date);
+    
+    switch(reminder.repeat) {
+        case 'daily':
+            currentDate.setDate(currentDate.getDate() + 1);
+            break;
+        case 'weekly':
+            currentDate.setDate(currentDate.getDate() + 7);
+            break;
+        case 'days':
+            const days = reminder.customDays || 1;
+            currentDate.setDate(currentDate.getDate() + days);
+            break;
+    }
+    
+    newReminder.date = currentDate;
+    state.reminders.push(newReminder);
+    saveReminders();
+    renderReminderList();
+    renderCalendar();
+    
+    // Schedule notification for the new reminder
+    scheduleNotification(newReminder);
+}
+
+// Edit reminder
+function editReminder(id) {
+    const reminder = state.reminders.find(r => r.id === id);
+    if (reminder) {
+        state.editingReminderId = id;
+        modalTitle.textContent = 'Edit Reminder';
+        openReminderForm(null, reminder);
+    }
+}
+
+// Delete reminder
+function deleteReminder(id) {
+    if (confirm('Are you sure you want to delete this reminder?')) {
+        state.reminders = state.reminders.filter(r => r.id !== id);
+        saveReminders();
+        renderReminderList();
+        renderCalendar();
+        showNotification('Reminder deleted successfully');
+    }
+}
+
+// Open reminder form
+function openReminderForm(prefilledDate = null, reminder = null) {
+    // Reset category buttons
+    categoryButtons.forEach(btn => btn.classList.remove('active'));
+    document.querySelector('.category-btn[data-category="general"]').classList.add('active');
+    
+    // Set focus to title input
+    setTimeout(() => {
+        document.getElementById('reminder-title').focus();
+    }, 100);
+    
+    if (prefilledDate) {
+        const date = new Date(prefilledDate);
+        date.setHours(12, 0, 0, 0);
+        
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        
+        document.getElementById('reminder-date').value = `${year}-${month}-${day}T${hours}:${minutes}`;
+    } else if (reminder) {
+        // Edit existing reminder
+        document.getElementById('reminder-title').value = reminder.title;
+        document.getElementById('reminder-description').value = reminder.description || '';
+        
+        const date = new Date(reminder.date);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        
+        document.getElementById('reminder-date').value = `${year}-${month}-${day}T${hours}:${minutes}`;
+        
+        // Set repeat value
+        let repeatValue = reminder.repeat || 'none';
+        if (reminder.repeat === 'days') {
+            repeatValue = 'days';
+            customDaysInput.value = reminder.customDays || 1;
+        }
+        document.getElementById('reminder-repeat').value = repeatValue;
+        
+        // Show/hide custom days input
+        if (repeatValue === 'days') {
+            customRepeatOptions.classList.add('show');
+        } else {
+            customRepeatOptions.classList.remove('show');
+        }
+        
+        // Set category
+        categoryButtons.forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.getAttribute('data-category') === reminder.category) {
+                btn.classList.add('active');
+            }
+        });
+    } else {
+        // New reminder - set to current time + 1 hour
+        const now = new Date();
+        now.setHours(now.getHours() + 1);
+        now.setMinutes(0, 0, 0);
+        
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        
+        document.getElementById('reminder-date').value = `${year}-${month}-${day}T${hours}:${minutes}`;
+        document.getElementById('reminder-repeat').value = 'none';
+        customRepeatOptions.classList.remove('show');
+    }
+    
+    if (!reminder) {
+        // Reset form for new reminder
+        document.getElementById('reminder-title').value = '';
+        document.getElementById('reminder-description').value = '';
+        document.getElementById('reminder-repeat').value = 'none';
+        customDaysInput.value = '';
+    }
+    
+    reminderModal.classList.add('show');
+}
+
+// Save reminder
+function saveReminder() {
+    const title = document.getElementById('reminder-title').value.trim();
+    const description = document.getElementById('reminder-description').value.trim();
+    const date = document.getElementById('reminder-date').value;
+    const repeat = document.getElementById('reminder-repeat').value;
+    const category = document.querySelector('.category-btn.active').getAttribute('data-category');
+    
+    if (!title) {
+        alert('Please enter a reminder title');
+        return;
+    }
+    
+    if (!date) {
+        alert('Please select a date and time');
+        return;
+    }
+    
+    let repeatData = repeat;
+    let customDays = null;
+    
+    if (repeat === 'days') {
+        const days = parseInt(customDaysInput.value);
+        if (isNaN(days) || days < 1 || days > 500) {
+            alert('Please enter a valid number of days between 1 and 500');
+            return;
+        }
+        repeatData = 'days';
+        customDays = days;
+    }
+    
+    if (state.editingReminderId) {
+        // Update existing reminder
+        const reminder = state.reminders.find(r => r.id === state.editingReminderId);
+        if (reminder) {
+            reminder.title = title;
+            reminder.description = description;
+            reminder.date = new Date(date);
+            reminder.category = category;
+            reminder.repeat = repeatData;
+            if (customDays) reminder.customDays = customDays;
+        }
+        showNotification('Reminder updated successfully');
+    } else {
+        // Create new reminder
+        const newReminder = {
+            id: state.reminders.length > 0 ? Math.max(...state.reminders.map(r => r.id)) + 1 : 1,
+            title,
+            description,
+            date: new Date(date),
+            category,
+            repeat: repeatData,
+            completed: false
+        };
+        
+        if (customDays) newReminder.customDays = customDays;
+        
+        state.reminders.push(newReminder);
+        showNotification(`Reminder "${title}" added successfully`);
+        
+        // Schedule notification
+        scheduleNotification(newReminder);
+    }
+    
+    saveReminders();
+    renderReminderList();
+    renderCalendar();
+    closeReminderModal();
+    state.editingReminderId = null;
+}
+
+// Check notification permission
+function checkNotificationPermission() {
+    if (!("Notification" in window)) {
+        console.log("This browser does not support notifications");
+        if (notificationPermissionBtn) notificationPermissionBtn.style.display = 'none';
+        return;
+    }
+    
+    if (Notification.permission === "granted") {
+        if (notificationPermissionBtn) notificationPermissionBtn.style.display = 'none';
+        state.notificationPermission = "granted";
+    } else if (Notification.permission === "default") {
+        if (notificationPermissionBtn) notificationPermissionBtn.style.display = 'flex';
+        state.notificationPermission = "default";
+    } else {
+        if (notificationPermissionBtn) notificationPermissionBtn.style.display = 'none';
+        state.notificationPermission = "denied";
+    }
+}
+
+// Request notification permission
+function requestNotificationPermission() {
+    if (!("Notification" in window)) {
+        alert("This browser does not support notifications");
+        return;
+    }
+    
+    Notification.requestPermission().then(function(permission) {
+        state.notificationPermission = permission;
+        checkNotificationPermission();
+        
+        if (permission === "granted") {
+            showNotification("Notifications enabled successfully!");
+            // Schedule notifications for existing reminders
+            scheduleAllNotifications();
+        }
+    });
+}
+
+// Schedule notification for a single reminder
+function scheduleNotification(reminder) {
+    if (state.notificationPermission !== "granted") {
+        return;
+    }
+    
+    const reminderDate = new Date(reminder.date);
+    const now = new Date();
+    const timeUntil = reminderDate.getTime() - now.getTime();
+    
+    // Only schedule if the reminder is in the future
+    if (timeUntil > 0) {
+        // Schedule notification 5 minutes before the reminder
+        const notificationTime = timeUntil - (5 * 60 * 1000);
+        
+        if (notificationTime > 0) {
+            setTimeout(() => {
+                if (state.notificationPermission === "granted") {
+                    const notification = new Notification(`Reminder: ${reminder.title}`, {
+                        body: reminder.description || "Time for your reminder!",
+                        icon: "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔔</text></svg>",
+                        tag: `reminder-${reminder.id}`,
+                        requireInteraction: true
+                    });
+                    
+                    notification.onclick = function() {
+                        window.focus();
+                        this.close();
+                    };
+                }
+            }, notificationTime);
+        }
+    }
+}
+
+// Schedule notifications for all reminders
+function scheduleAllNotifications() {
+    if (state.notificationPermission !== "granted") {
+        return;
+    }
+    
+    const now = new Date();
+    
+    state.reminders.forEach(reminder => {
+        if (!reminder.completed) {
+            const reminderDate = new Date(reminder.date);
+            if (reminderDate > now) {
+                scheduleNotification(reminder);
+            }
+        }
+    });
+}
+
+// Close reminder modal
+function closeReminderModal() {
+    reminderModal.classList.remove('show');
+    state.editingReminderId = null;
+    customRepeatOptions.classList.remove('show');
+}
+
+// Show notification toast
+function showNotification(message, type = 'success') {
+    const notificationEl = document.createElement('div');
+    notificationEl.className = 'notification';
+    notificationEl.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background-color: white;
+        border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        z-index: 1000;
+        transform: translateX(150%);
+        transition: transform 0.3s ease;
+    `;
+    
+    const iconColor = type === 'success' ? 'var(--success-color)' : 
+                     type === 'warning' ? 'var(--warning-color)' : 
+                     type === 'info' ? 'var(--primary-blue)' : 
+                     'var(--danger-color)';
+    
+    notificationEl.innerHTML = `
+        <div class="notification-icon" style="width: 20px; height: 20px; background-color: ${iconColor}; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px;">
+            <i class="fas fa-${type === 'success' ? 'check' : 
+                          type === 'warning' ? 'exclamation-triangle' : 
+                          type === 'info' ? 'info-circle' : 
+                          'exclamation'}"></i>
+        </div>
+        <div class="notification-content" style="flex: 1;">
+            <div class="notification-title" style="font-weight: 500; margin-bottom: 2px;">
+                ${type === 'success' ? 'Success' : 
+                 type === 'warning' ? 'Warning' : 
+                 type === 'info' ? 'Info' : 
+                 'Error'}
+            </div>
+            <div class="notification-message" style="color: var(--text-light); font-size: 14px;">${message}</div>
+        </div>
+    `;
+    
+    document.body.appendChild(notificationEl);
+    
+    // Trigger animation
+    setTimeout(() => {
+        notificationEl.style.transform = 'translateX(0)';
+    }, 10);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notificationEl.style.transform = 'translateX(150%)';
+        setTimeout(() => {
+            if (notificationEl.parentNode) {
+                notificationEl.parentNode.removeChild(notificationEl);
+            }
+        }, 300);
+    }, 3000);
+}
+
+// Update view title
+function updateViewTitle() {
+    let title = '';
+    switch(state.currentView) {
+        case 'today':
+            title = 'Today\'s Reminders';
+            break;
+        case 'upcoming':
+            title = 'Upcoming Reminders';
+            break;
+        case 'all':
+            title = 'All Reminders';
+            break;
+        case 'completed':
+            title = 'Completed Reminders';
+            break;
+    }
+    
+    if (state.currentCategory) {
+        title = `${state.currentCategory.charAt(0).toUpperCase() + state.currentCategory.slice(1)} ${title}`;
+    }
+    
+    viewTitle.textContent = title;
+    document.getElementById('list-title').textContent = title;
+}
+
+// Setup event listeners
+function setupEventListeners() {
+    // Toggle sidebar
+    toggleSidebar.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+        const icon = toggleSidebar.querySelector('i');
+        const text = toggleSidebar.querySelector('span');
+        
+        if (sidebar.classList.contains('collapsed')) {
+            icon.className = 'fas fa-chevron-right';
+            text.textContent = 'Expand';
+        } else {
+            icon.className = 'fas fa-chevron-left';
+            text.textContent = 'Collapse';
+        }
+    });
+
+    // Navigation items
+    navItems.forEach(item => {
+        item.addEventListener('click', function() {
+            // Handle settings navigation - redirect to settings.html
+            if (this === settingsNav) {
+                window.location.href = 'settings.html';
+                return;
+            }
+            
+            // Remove active class from all items
+            navItems.forEach(nav => nav.classList.remove('active'));
+            
+            // Add active class to clicked item
+            this.classList.add('active');
+            
+            // Handle category filters
+            if (this.dataset.category) {
+                state.currentCategory = this.dataset.category;
+                state.currentView = null;
+                updateViewTitle();
+                renderReminderList();
+                return;
+            }
+            
+            // Handle view filters
+            if (this.dataset.view) {
+                state.currentView = this.dataset.view;
+                state.currentCategory = null;
+            }
+            
+            // Update view
+            updateViewTitle();
+            renderReminderList();
+            renderCalendar();
+        });
+    });
+
+    // View toggle (calendar/list)
+    viewToggle.addEventListener('click', function() {
+        state.isCalendarView = !state.isCalendarView;
+        
+        if (state.isCalendarView) {
+            calendarView.style.display = 'block';
+            listView.style.display = 'none';
+            this.innerHTML = '<i class="fas fa-list"></i><span>List View</span>';
+        } else {
+            calendarView.style.display = 'none';
+            listView.style.display = 'block';
+            this.innerHTML = '<i class="fas fa-calendar-alt"></i><span>Calendar View</span>';
+            renderReminderList();
+        }
+    });
+
+    // Add reminder button
+    addReminderBtn.addEventListener('click', () => openReminderForm());
+
+    // Reminder modal
+    closeModal.addEventListener('click', closeReminderModal);
+    cancelReminder.addEventListener('click', closeReminderModal);
+    saveReminderBtn.addEventListener('click', saveReminder);
+
+    // Category buttons
+    categoryButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            categoryButtons.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+
+    // Notification permission button
+    if (notificationPermissionBtn) {
+        notificationPermissionBtn.addEventListener('click', requestNotificationPermission);
+    }
+
+    // Repeat select change listener
+    repeatSelect.addEventListener('change', function() {
+        if (this.value === 'days') {
+            customRepeatOptions.classList.add('show');
+            customDaysInput.focus();
+        } else {
+            customRepeatOptions.classList.remove('show');
+        }
+    });
+
+    // Validate custom days input
+    customDaysInput.addEventListener('input', function() {
+        let value = parseInt(this.value);
+        if (isNaN(value) || value < 1) {
+            this.value = 1;
+        } else if (value > 500) {
+            this.value = 500;
+        }
+    });
+
+    // Listen for app installed event
+    window.addEventListener('appinstalled', () => {
+        state.deferredPrompt = null;
+        showNotification('Reminder app installed successfully!');
+        
+        // Update install nav item
+        const installNav = document.getElementById('install-nav');
+        if (installNav) {
+            installNav.innerHTML = `
+                <div class="nav-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="nav-text">App Installed</div>
+                <div class="counter" style="background-color: var(--success-color);"><i class="fas fa-check"></i></div>
+            `;
+            installNav.style.pointerEvents = 'none';
+            installNav.style.opacity = '0.7';
+        }
+    });
+}
+
+// Clear all data (for testing)
+function clearAllData() {
+    if (confirm('Are you sure you want to clear ALL reminders and start fresh?')) {
+        localStorage.removeItem('reminders');
+        state.reminders = [];
+        saveReminders();
+        renderReminderList();
+        renderCalendar();
+        showNotification('All data cleared successfully');
+    }
+}
+
+// Initialize the app when DOM is loaded
+document.addEventListener('DOMContentLoaded', initApp);
+
+// Make clearAllData available globally for testing
+window.clearAllData = clearAllData;
+// Modified for local testing
+function checkNotificationPermission() {
+    if (!("Notification" in window)) {
+        console.log("This browser does not support notifications");
+        if (notificationPermissionBtn) notificationPermissionBtn.style.display = 'none';
+        return;
+    }
+    
+    // For local file testing, mock the permission
+    if (window.location.protocol === 'file:') {
+        console.log('Running from file:// - notifications will be simulated');
+        state.notificationPermission = "granted";
+        if (notificationPermissionBtn) notificationPermissionBtn.style.display = 'none';
+        return;
+    }
+    
+    // Normal behavior for HTTP/HTTPS
+    if (Notification.permission === "granted") {
+        if (notificationPermissionBtn) notificationPermissionBtn.style.display = 'none';
+        state.notificationPermission = "granted";
+    } else if (Notification.permission === "default") {
+        if (notificationPermissionBtn) notificationPermissionBtn.style.display = 'flex';
+        state.notificationPermission = "default";
+    } else {
+        if (notificationPermissionBtn) notificationPermissionBtn.style.display = 'none';
+        state.notificationPermission = "denied";
+    }
+}
+
+function scheduleNotification(reminder) {
+    // For local file testing, simulate notifications
+    if (window.location.protocol === 'file:') {
+        const reminderDate = new Date(reminder.date);
+        const now = new Date();
+        const timeUntil = reminderDate.getTime() - now.getTime();
+        
+        if (timeUntil > 0) {
+            const notificationTime = timeUntil - (5 * 60 * 1000);
+            
+            if (notificationTime > 0) {
+                setTimeout(() => {
+                    console.log(`[SIMULATED NOTIFICATION] Reminder: ${reminder.title}`);
+                    console.log(`[SIMULATED NOTIFICATION] Time: ${reminderDate.toLocaleString()}`);
+                    console.log(`[SIMULATED NOTIFICATION] Description: ${reminder.description || "Time for your reminder!"}`);
+                    
+                    // Create a visible notification in the UI instead
+                    createMockNotification(reminder);
+                }, Math.min(notificationTime, 5000)); // Use 5 seconds max for testing
+            }
+        }
+        return;
+    }
+    
+    // Normal behavior for HTTP/HTTPS
+    if (state.notificationPermission !== "granted") {
+        return;
+    }
+    
+    const reminderDate = new Date(reminder.date);
+    const now = new Date();
+    const timeUntil = reminderDate.getTime() - now.getTime();
+    
+    if (timeUntil > 0) {
+        const notificationTime = timeUntil - (5 * 60 * 1000);
+        
+        if (notificationTime > 0) {
+            setTimeout(() => {
+                if (state.notificationPermission === "granted") {
+                    new Notification(`Reminder: ${reminder.title}`, {
+                        body: reminder.description || "Time for your reminder!",
+                        icon: "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔔</text></svg>",
+                        tag: `reminder-${reminder.id}`,
+                        requireInteraction: true
+                    }).onclick = function() {
+                        window.focus();
+                        this.close();
+                    };
+                }
+            }, notificationTime);
+        }
+    }
+}
+
+// Create a mock notification UI for local testing
+function createMockNotification(reminder) {
+    const mockNotif = document.createElement('div');
+    mockNotif.className = 'mock-notification';
+    mockNotif.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        padding: 15px;
+        width: 300px;
+        z-index: 9999;
+        border-left: 4px solid var(--primary-blue);
+        animation: slideIn 0.3s ease;
+    `;
+    
+    mockNotif.innerHTML = `
+        <div style="display: flex; align-items: flex-start; gap: 10px;">
+            <div style="background: var(--primary-blue); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-bell"></i>
+            </div>
+            <div style="flex: 1;">
+                <div style="font-weight: 600; margin-bottom: 5px; color: var(--text-dark);">🔔 Reminder: ${reminder.title}</div>
+                <div style="font-size: 13px; color: var(--text-light); margin-bottom: 8px;">${reminder.description || "Time for your reminder!"}</div>
+                <div style="font-size: 11px; color: var(--text-light);">Scheduled for: ${new Date(reminder.date).toLocaleString()}</div>
+            </div>
+            <button class="close-mock-notif" style="background: none; border: none; color: var(--text-light); cursor: pointer; padding: 2px;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(mockNotif);
+    
+    // Add animation style
+    if (!document.querySelector('#mock-notif-style')) {
+        const style = document.createElement('style');
+        style.id = 'mock-notif-style';
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes fadeOut {
+                from { opacity: 1; }
+                to { opacity: 0; transform: translateX(100%); }
+            }
+            .mock-notification.fade-out {
+                animation: fadeOut 0.3s ease forwards;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // Close button
+    mockNotif.querySelector('.close-mock-notif').addEventListener('click', () => {
+        mockNotif.classList.add('fade-out');
+        setTimeout(() => mockNotif.remove(), 300);
+    });
+    
+    // Auto-remove after 10 seconds
+    setTimeout(() => {
+        if (mockNotif.parentNode) {
+            mockNotif.classList.add('fade-out');
+            setTimeout(() => mockNotif.remove(), 300);
+        }
+    }, 10000);
+}
+
+// Also modify requestNotificationPermission for local testing
+function requestNotificationPermission() {
+    if (!("Notification" in window)) {
+        alert("This browser does not support notifications");
+        return;
+    }
+    
+    // For local files, simulate granting permission
+    if (window.location.protocol === 'file:') {
+        showNotification("Notifications enabled for local testing (simulated)");
+        state.notificationPermission = "granted";
+        checkNotificationPermission();
+        scheduleAllNotifications();
+        return;
+    }
+    
+    // Normal behavior for HTTP/HTTPS
+    Notification.requestPermission().then(function(permission) {
+        state.notificationPermission = permission;
+        checkNotificationPermission();
+        
+        if (permission === "granted") {
+            showNotification("Notifications enabled successfully!");
+            scheduleAllNotifications();
+        }
+    });
+}
+</script>
+</body>
+</html>
